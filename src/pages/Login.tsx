@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, LogIn, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, LogIn, ArrowLeft, UserPlus } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 
 
@@ -16,6 +17,50 @@ const Login = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleCreateAdmin = async () => {
+    const adminPhone = '+919876543210'; // Static admin phone number
+    const adminPassword = 'admin123'; // Static admin password
+
+    setLoading(true);
+    try {
+      // Create the auth user with phone authentication
+      const { data, error: authError } = await supabase.auth.signUp({
+        phone: '+917708643097',
+        password: 'Praveen7708',
+      });
+
+      if (authError) {
+        toast({ title: 'Failed to create admin user', description: authError.message, variant: 'destructive' });
+        return;
+      }
+
+      const userId = data?.user?.id;
+      if (!userId) {
+        toast({ title: 'Failed to get user ID', variant: 'destructive' });
+        return;
+      }
+
+      // Add admin role to user_roles table
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: 'admin' });
+
+      if (roleError) {
+        toast({ title: 'User created but failed to assign admin role', description: roleError.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({
+        title: 'Admin user created successfully!',
+        description: `Phone: ${adminPhone}, Password: ${adminPassword}`,
+      });
+    } catch (error) {
+      toast({ title: 'Unexpected error', description: 'Failed to create admin user', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +129,16 @@ const Login = () => {
           <h1 className="font-serif text-2xl font-bold gold-text">ALogin</h1>
           <p className="text-sm text-muted-foreground">SRI MEENAKSHI TRADERS Billing System</p>
         </div>
+
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          onClick={handleCreateAdmin}
+          disabled={loading}
+          className="w-full py-2 rounded-lg bg-secondary text-secondary-foreground font-medium flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+        >
+          <UserPlus size={16} />
+          {loading ? 'Creating...' : 'Create Admin User (+919876543210)'}
+        </motion.button>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
