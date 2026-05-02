@@ -62,23 +62,6 @@ const Login = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone || !password) {
-      toast({ title: 'Enter phone number and password', variant: 'destructive' });
-      return;
-    }
-    setLoading(true);
-    const { error } = await signIn(phone, password);
-    setLoading(false);
-    if (error) {
-      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Welcome back! ✨' });
-      navigate('/admin');
-    }
-  };
-
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
