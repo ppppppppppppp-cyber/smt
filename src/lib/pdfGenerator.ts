@@ -35,13 +35,13 @@ export const generateBillPDF = (data: BillData): jsPDF => {
 
   // Shop name
   if (data.showShopName) {
-    doc.setFontSize(14);
+    doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("SRI MEENAKSHI TRADERS", 50, y, { align: "center" });
     y += 6;
   }
 
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("ESTIMATE", 50, y, { align: "center" });
   y += 4;
