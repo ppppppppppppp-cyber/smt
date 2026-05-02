@@ -228,7 +228,7 @@ const Index = () => {
             <Link to="/login">
               <motion.button whileTap={{ scale: 0.95 }} className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-lg border border-border/60">
                 <LogIn size={14} />
-                {user ? 'Account' : 'Admin Login'}
+                {user ? 'Account' : 'Login'}
               </motion.button>
             </Link>
           </div>
