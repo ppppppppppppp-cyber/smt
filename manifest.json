@@ -1,18 +1,18 @@
 {
-  "name": "RSG",
-  "short_name": "RSG",
+  "name": "R",
+  "short_name": "SMT",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f1e8",
   "theme_color": "#1f2937",
   "icons": [
     {
-      "src": "/RSG ip.png",
+      "src": "/smt_180.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/RSG ppc.png",
+      "src": "/smt_512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
