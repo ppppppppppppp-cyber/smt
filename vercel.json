@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "bill-app",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
