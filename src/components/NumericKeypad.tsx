@@ -10,34 +10,52 @@ const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
   const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'del', '0', 'ent'];
 
   const provideFeedback = () => {
-    // Try vibration first (works on Android and some browsers)
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    } else {
-      // Fallback: play iPhone-like tab sound for iOS and other devices
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const bufferSize = audioContext.sampleRate * 0.1; // 100ms buffer
-        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        // Generate a click sound similar to iPhone keyboard tap
-        for (let i = 0; i < bufferSize; i++) {
-          // Create a short impulse with exponential decay
-          const t = i / audioContext.sampleRate;
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 50) * 0.3; // White noise with decay
-        }
-        
-        const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContext.destination);
-        source.start();
-      } catch (error) {
-        // If audio fails, just continue without feedback
-        console.log('Audio feedback not available');
+  if (navigator.vibrate) {
+    navigator.vibrate(30);
+  } else {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const gainNode = audioContext.createGain();
+      gainNode.connect(audioContext.destination);
+
+      // Layer 1: short high-frequency tone (the "tap" part)
+      const osc = audioContext.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, audioContext.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.03);
+      osc.connect(gainNode);
+
+      // Layer 2: noise burst (the "click" texture)
+      const bufferSize = audioContext.sampleRate * 0.04; // 40ms
+      const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
       }
+      const noise = audioContext.createBufferSource();
+      noise.buffer = buffer;
+
+      const noiseGain = audioContext.createGain();
+      noiseGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      noise.connect(noiseGain);
+      noiseGain.connect(audioContext.destination);
+
+      // Envelope: quick attack, fast decay
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+
+      osc.start(audioContext.currentTime);
+      osc.stop(audioContext.currentTime + 0.08);
+      noise.start(audioContext.currentTime);
+      noise.stop(audioContext.currentTime + 0.04);
+
+    } catch (error) {
+      console.log('Audio feedback not available');
     }
-  };
+  }
+};
 
   return (
     <div className="grid grid-cols-3 gap-2 p-3 max-w-xs mx-auto">
