@@ -37,19 +37,19 @@ const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
       noise.buffer = buffer;
 
       const noiseGain = audioContext.createGain();
-      noiseGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+      noiseGain.gain.setValueAtTime(0.05, audioContext.currentTime);
       noise.connect(noiseGain);
       noiseGain.connect(audioContext.destination);
 
       // Envelope: quick attack, fast decay
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.005);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
 
       osc.start(audioContext.currentTime);
-      osc.stop(audioContext.currentTime + 0.08);
+      osc.stop(audioContext.currentTime + 0.05);
       noise.start(audioContext.currentTime);
-      noise.stop(audioContext.currentTime + 0.04);
+      noise.stop(audioContext.currentTime + 0.02);
 
     } catch (error) {
       console.log('Audio feedback not available');
