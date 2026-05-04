@@ -9,6 +9,12 @@ interface NumericKeypadProps {
 const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
   const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'del', '0', 'ent'];
 
+  const vibrate = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
   return (
     <div className="grid grid-cols-3 gap-2 p-3 max-w-xs mx-auto">
       {keys.map((key) => (
@@ -24,6 +30,7 @@ const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
               : 'keypad-btn'
           }
           onClick={() => {
+            vibrate();
             if (key === 'del') onDelete();
             else if (key === 'ent') onEnter();
             else onKey(key);
