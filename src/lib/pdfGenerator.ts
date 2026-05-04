@@ -12,11 +12,13 @@ interface BillData {
   items: BillItem[];
   total: number;
 }
+
 const formatINR = (num: number) => {
   return new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0
   }).format(num);
 };
+
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
   const day = String(d.getDate()).padStart(2, "0");
@@ -27,26 +29,26 @@ const formatDate = (dateStr: string) => {
 
 export const generateBillPDF = (data: BillData): jsPDF => {
   const doc = new jsPDF({
-    unit: "mm",
-    format: [100, 150], // 10cm x 15cm
-  });
+  orientation: "portrait",
+  unit: "mm",
+  format: [148, 210],
+});
 
   let y = 8;
 
-  // Shop name
-  if (data.showShopName) {
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("SRI MEENAKSHI TRADERS", 50, y, { align: "center" });
-    y += 6;
-  }
-
-  doc.setFontSize(10);
+ if (data.showShopName) {
+  const centerX = 74; // center of 148mm page
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("ESTIMATE", 50, y, { align: "center" });
-  y += 4;
+  doc.text("Sri Meenakshi Traders", centerX, y, { align: "center" });
+  y += 5;
+}
 
-  // Prepare rows
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("ESTIMATE", 74, y, { align: "center" });
+  y += 1;
+
   const itemsForPdf = data.items.map((item, i) => ({
     no: i + 1,
     particulars: item.particulars,
@@ -59,7 +61,6 @@ export const generateBillPDF = (data: BillData): jsPDF => {
   if (data.packingCharge && data.packingCharge > 0) {
     itemsForPdf.push({ no: 0, particulars: 'PACKING CHARGES', rate: '', qty: '', amount: data.packingCharge, isSpecial: true });
   }
-
   if (data.oldbalance && data.oldbalance > 0) {
     itemsForPdf.push({ no: 0, particulars: 'OLD BALANCE', rate: '', qty: '', amount: data.oldbalance, isSpecial: true });
   }
@@ -67,71 +68,24 @@ export const generateBillPDF = (data: BillData): jsPDF => {
     itemsForPdf.push({ no: 0, particulars: 'ADVANCE PAID', rate: '', qty: '', amount: -data.advPay, isSpecial: true });
   }
 
-
   const grandTotal = itemsForPdf.reduce((s, it) => s + (it.amount || 0), 0);
 
-  // Calculate vertical space and adapt row height so we can fit at least 25 rows per page.
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const topY = y; // where table starts
-  const bottomMargin = 0.5; // mm reserved at bottom
+  const ROWS_PER_PAGE = 30;
 
-  let availableHeight = pageHeight - topY - bottomMargin;
-
-  // Initial style estimates
-  let fontSize = 8; // pts
-  let cellPadding = 1.5; // mm
-
-  const minFontSize = 6;
-  const minCellPadding = 0.6;
-
-  const headerRows = 2; // number of head rows in our table
-  const footerRows = 2; // subtotal + (maybe grand total)
-
-  // Helper to estimate row height in mm. Font size in pts -> mm conversion (1pt = 0.352777...mm)
-  const ptToMm = (pt: number) => pt * 0.3527777778;
-  const estimateRowHeight = (fs: number, cp: number) => ptToMm(fs) + cp * 2 + 0.5; // small extra
-
-  // Adjust fontSize/cellPadding down until we can fit 25 rows (or reach minimums)
-  let rowsPerPage = 25;
-  while (true) {
-    const rowH = estimateRowHeight(fontSize, cellPadding);
-    const headerH = headerRows * rowH;
-    const footerH = footerRows * rowH;
-    const usable = availableHeight - headerH - footerH;
-    const fit = Math.floor(usable / rowH);
-    if (fit >= 25) {
-      rowsPerPage = 25;
-      break;
-    }
-    // If we've reached minimums, accept the fit (may be <25)
-    if (fontSize <= minFontSize && cellPadding <= minCellPadding) {
-      rowsPerPage = Math.max(1, fit);
-      break;
-    }
-    // reduce sizes a bit
-    fontSize = Math.max(minFontSize, fontSize - 0.5);
-    cellPadding = Math.max(minCellPadding, +(cellPadding - 0.15).toFixed(2));
-  }
-
-  // Now paginate according to computed rowsPerPage
-  const pages: typeof itemsForPdf[] = [];
-  for (let i = 0; i < itemsForPdf.length; i += rowsPerPage) {
-    pages.push(itemsForPdf.slice(i, i + rowsPerPage));
-  }
-  if (pages.length === 0) pages.push([]);
+  // Fixed font and cell sizes — tuned to fit 32 rows (30 items + subtotal + grand total)
+  // in 150mm page height with buffer for multi-line particulars
+  const fontSize = data.showShopName ? 7 : 7;
+  const cellPadding = data.showShopName ? 1.2 : 1.2;
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const leftMargin = 3; // mm
-  const rightMargin = 3; // mm
-  // reserve a tiny extra gap to avoid floating-point overflow when rendering
-  const renderSafetyGap = 0.8; // mm
-  let availableWidth = pageWidth - leftMargin - rightMargin - renderSafetyGap;
+  const leftMargin = 5;
+  const rightMargin = 10;
+  const renderSafetyGap = 0.5;
+  const availableWidth = pageWidth - leftMargin - rightMargin - renderSafetyGap;
 
-  // Base column widths (rough values in mm). We'll scale them to fill available width.
-  const baseWidths = { 0: 8, 1: 46, 2: 14, 3: 10, 4: 20 };
+  const baseWidths = { 0: 5, 1: 28, 2: 10, 3: 8, 4: 14 };
   const sumBase = Object.values(baseWidths).reduce((s, v) => s + v, 0);
   const scale = availableWidth / sumBase;
-  // Round down widths to whole mm to avoid tiny overflows; ensure reasonable minimums
   const colWidths = {
     0: Math.max(6, Math.floor(baseWidths[0] * scale)),
     1: Math.max(10, Math.floor(baseWidths[1] * scale)),
@@ -139,52 +93,68 @@ export const generateBillPDF = (data: BillData): jsPDF => {
     3: Math.max(6, Math.floor(baseWidths[3] * scale)),
     4: Math.max(8, Math.floor(baseWidths[4] * scale)),
   };
-  // If rounding caused a tiny gap, add it to the particulars column so table fills width
   const totalCols = Object.values(colWidths).reduce((s, v) => s + v, 0);
   const roundingGap = Math.round(availableWidth) - totalCols;
   if (roundingGap > 0) colWidths[1] += roundingGap;
 
-  // Render pages: each page gets rowsPerPage rows (padded if needed), then a Subtotal row.
+  // Paginate — always in chunks of ROWS_PER_PAGE
+  const pages: typeof itemsForPdf[] = [];
+  for (let i = 0; i < itemsForPdf.length; i += ROWS_PER_PAGE) {
+    pages.push(itemsForPdf.slice(i, i + ROWS_PER_PAGE));
+  }
+  if (pages.length === 0) pages.push([]);
+
   pages.forEach((pageItems, pageIndex) => {
-    // Pad page to rowsPerPage with empty rows so table looks consistent
+    // Always pad to exactly ROWS_PER_PAGE rows
     const padded = [...pageItems];
-    while (padded.length < rowsPerPage) padded.push({ no: 0, particulars: '', rate: '', qty: '', amount: 0 ,isSpecial: false});
+    while (padded.length < ROWS_PER_PAGE) {
+      padded.push({ no: 0, particulars: '', rate: '', qty: '', amount: 0, isSpecial: false });
+    }
+
+    const pageSubtotal = pageItems.reduce((s, it) => s + (it.amount || 0), 0);
 
     const pageBody: any[] = padded.map((it: any) => {
       const noDisplay = it.no === 0 ? '' : it.no;
       const amountDisplay = it.particulars === '' ? '' : (it.amount || 0).toFixed(0);
-      
-      // If special item, center the particulars
+
       if (it.isSpecial) {
         return [
           { content: '', styles: { halign: 'center' } },
           { content: it.particulars, styles: { halign: 'center' } },
           { content: it.rate, styles: { halign: 'center' } },
           { content: it.qty, styles: { halign: 'center' } },
-          { content: amountDisplay, styles: { halign: 'center' } }
+          { content: amountDisplay, styles: { halign: 'center' } },
         ];
       }
-      
+
       return [noDisplay, it.particulars, it.rate, it.qty, amountDisplay];
     });
 
-    const pageSubtotal = pageItems.reduce((s, it) => s + (it.amount || 0), 0);
-
-    // Subtotal row for the page
+    // Subtotal row
     pageBody.push([
       { content: 'SUBTOTAL', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } },
       { content: formatINR(pageSubtotal), styles: { fontStyle: 'bold' } },
     ]);
 
-    // If last page, add GRAND TOTAL row below subtotal
+    // Grand total only on last page
     if (pageIndex === pages.length - 1) {
       pageBody.push([
         { content: 'GRAND TOTAL', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } },
         { content: formatINR(grandTotal), styles: { fontStyle: 'bold' } },
       ]);
+    } else {
+      // Keep consistent 32-row structure on non-last pages too
+      pageBody.push([
+        { content: '', colSpan: 5, styles: { halign: 'right' } },
+      ]);
     }
 
-    if (pageIndex > 0) doc.addPage();
+    if (pageIndex > 0) {
+       doc.addPage();
+       y = 8;
+    }
+  const currentFontSize = pageIndex === 0 ? fontSize : (data.showShopName ? 6 : 6);
+  const currentCellPadding = pageIndex === 0 ? cellPadding : (data.showShopName ? 1.5: 1.5);
 
     autoTable(doc, {
       startY: y,
@@ -203,12 +173,16 @@ export const generateBillPDF = (data: BillData): jsPDF => {
       body: pageBody,
 
       styles: {
-        fontSize,
-        cellPadding,
+        fontSize: currentFontSize,
+        cellPadding: currentCellPadding,
         lineWidth: 0.1,
         valign: 'middle',
         textColor: 0,
         lineColor: 0,
+        // KEY: this allows multi-line text to wrap within the cell
+        // instead of overflowing to next page
+        overflow: 'linebreak',
+        cellWidth: 'wrap',
       },
 
       headStyles: {
@@ -225,9 +199,11 @@ export const generateBillPDF = (data: BillData): jsPDF => {
         3: { cellWidth: colWidths[3], halign: 'center' },
         4: { cellWidth: colWidths[4], halign: 'center' },
       },
+
+      // Prevent jspdf-autotable from splitting rows across pages
+      rowPageBreak: 'avoid',
     });
   });
 
   return doc;
-  //d;
 };
