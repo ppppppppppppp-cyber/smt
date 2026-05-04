@@ -14,21 +14,24 @@ const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
     if (navigator.vibrate) {
       navigator.vibrate(50);
     } else {
-      // Fallback: play a short beep sound for iOS and other devices
+      // Fallback: play iPhone-like tab sound for iOS and other devices
       try {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        const bufferSize = audioContext.sampleRate * 0.1; // 100ms buffer
+        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
         
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        // Generate a click sound similar to iPhone keyboard tap
+        for (let i = 0; i < bufferSize; i++) {
+          // Create a short impulse with exponential decay
+          const t = i / audioContext.sampleRate;
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 50) * 0.3; // White noise with decay
+        }
         
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz beep
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Low volume
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
       } catch (error) {
         // If audio fails, just continue without feedback
         console.log('Audio feedback not available');
