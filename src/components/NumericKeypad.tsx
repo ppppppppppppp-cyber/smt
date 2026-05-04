@@ -7,7 +7,7 @@ interface NumericKeypadProps {
 }
 
 const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
-  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ent'];
+  const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'del', '0', 'ent'];
 
   return (
     <div className="grid grid-cols-3 gap-2 p-3 max-w-xs mx-auto">
