@@ -9,47 +9,27 @@ interface NumericKeypadProps {
 const NumericKeypad = ({ onKey, onDelete, onEnter }: NumericKeypadProps) => {
   const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', 'del', '0', 'ent'];
 
-  const provideFeedback = () => {
+ const provideFeedback = () => {
   if (navigator.vibrate) {
     navigator.vibrate(30);
   } else {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      const gainNode = audioContext.createGain();
-      gainNode.connect(audioContext.destination);
 
-      // Layer 1: short high-frequency tone (the "tap" part)
       const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1200, audioContext.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.03);
-      osc.connect(gainNode);
+      osc.frequency.setValueAtTime(900, audioContext.currentTime);
 
-      // Layer 2: noise burst (the "click" texture)
-      const bufferSize = audioContext.sampleRate * 0.04; // 40ms
-      const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
-      }
-      const noise = audioContext.createBufferSource();
-      noise.buffer = buffer;
+      gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.025);
 
-      const noiseGain = audioContext.createGain();
-      noiseGain.gain.setValueAtTime(0.05, audioContext.currentTime);
-      noise.connect(noiseGain);
-      noiseGain.connect(audioContext.destination);
-
-      // Envelope: quick attack, fast decay
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.005);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
 
       osc.start(audioContext.currentTime);
-      osc.stop(audioContext.currentTime + 0.05);
-      noise.start(audioContext.currentTime);
-      noise.stop(audioContext.currentTime + 0.02);
+      osc.stop(audioContext.currentTime + 0.025);
 
     } catch (error) {
       console.log('Audio feedback not available');
