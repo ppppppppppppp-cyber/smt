@@ -49,14 +49,15 @@ const Index = () => {
     setoldEnabled(false);
     setAdvPayEnabled(false);
     setActiveField({ row: 0, field: 'pid' });
-    localStorage.removeItem('rsg_bill_draft');
+    localStorage.removeItem('smt_bill_draft');
+    window.location.reload();
   }
   };
 
   // Load draft on mount
 useEffect(() => {
   try {
-    const raw = localStorage.getItem('rsg_bill_draft');
+    const raw = localStorage.getItem('smt_bill_draft');
     if (!raw) return;
     const d = JSON.parse(raw);
     if (d.items?.length)         setItems(d.items);
@@ -79,7 +80,7 @@ useEffect(() => {
       oldEnabled, oldbalance,
       advPayEnabled, advPay,
     };
-    localStorage.setItem('rsg_bill_draft', JSON.stringify(draft));
+    localStorage.setItem('smt_bill_draft', JSON.stringify(draft));
   }, [items, customerName, showShopName,
       packingEnabled, packingCharge,
       oldEnabled, oldbalance,
@@ -220,7 +221,7 @@ useEffect(() => {
       }
 
       toast({ title: 'Bill saved successfully! ✨' });
-      localStorage.removeItem('rsg_bill_draft');
+      localStorage.removeItem('smt_bill_draft');
       setItems([createEmptyItem()]);
       setCustomerName('');
       setPackingCharge('');
