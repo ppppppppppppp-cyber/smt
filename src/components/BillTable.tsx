@@ -243,8 +243,6 @@ const BillTable = ({
                     onClick={() => setActiveField({ row: i, field: 'particulars' })}
                     onKeyDown={e => handleKeyDown(e, i, 'particulars')}
                     className="w-full"
-                    inputMode={mobileWithKeypad ? 'none' : undefined}
-                    readOnly={mobileWithKeypad}
                   />
                 </td>
                 <td>

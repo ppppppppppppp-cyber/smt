@@ -20,6 +20,7 @@ interface Bill {
   adv_pay: number | null;
   total: number;
   created_at: string;
+  paid: boolean;
 }
 
 const ViewBillsTab = () => {
@@ -209,6 +210,20 @@ const ViewBillsTab = () => {
     fetchBills();
   };
 
+  const togglePaidStatus = async (billId: string, currentPaid: boolean) => {
+    const { error } = await supabase
+      .from('bills')
+      .update({ paid: !currentPaid })
+      .eq('id', billId);
+
+    if (error) {
+      toast({ title: 'Error updating paid status', variant: 'destructive' });
+    } else {
+      toast({ title: `Bill marked as ${!currentPaid ? 'paid' : 'unpaid'}` });
+      fetchBills();
+    }
+  };
+
   const handlePrint = () => {
     if (!selectedBill) return;
     const packing = parseFloat(packingCharge) || 0;
@@ -339,12 +354,11 @@ const ViewBillsTab = () => {
       ) : (
         <div className="space-y-2">
           {bills.map((bill, i) => (
-            <motion.button
+            <motion.div
               key={bill.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
-              onClick={() => openBill(bill)}
               className="w-full glass-card p-4 text-left hover:border-primary/30 transition-colors"
             >
               <div className="flex justify-between items-center">
@@ -355,9 +369,26 @@ const ViewBillsTab = () => {
                     <p className="text-xs text-muted-foreground">{new Date(bill.created_at).toLocaleDateString('en-IN')}</p>
                   </div>
                 </div>
-                <span className="font-serif font-bold text-primary">₹{bill.total}</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground">Paid</label>
+                    <input
+                      type="checkbox"
+                      checked={bill.paid}
+                      onChange={() => togglePaidStatus(bill.id, bill.paid)}
+                      className="w-4 h-4 accent-primary"
+                    />
+                  </div>
+                  <span className="font-serif font-bold text-primary">₹{bill.total}</span>
+                </div>
               </div>
-            </motion.button>
+              <motion.button
+                onClick={() => openBill(bill)}
+                className="mt-2 w-full text-left text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                Click to edit bill details
+              </motion.button>
+            </motion.div>
           ))}
         </div>
       )}
