@@ -122,6 +122,9 @@ const BillTable = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, row: number, field: 'pid' | 'particulars' | 'rate' | 'qty') => {
+    const fields: Array<'pid' | 'particulars' | 'rate' | 'qty'> = ['pid', 'particulars', 'rate', 'qty'];
+    const currentIndex = fields.indexOf(field);
+
     if (e.key === 'Enter') {
       e.preventDefault();
       if (field === 'pid') {
@@ -144,7 +147,6 @@ const BillTable = ({
         }, 150);
       } else if (field === 'qty') {
         (document.activeElement as HTMLElement)?.blur();
-        // Calc amount and move to next row
         if (row === items.length - 1) {
           addRow();
         } else {
@@ -154,6 +156,24 @@ const BillTable = ({
           }, 150);
         }
       }
+    } else if (e.key === 'ArrowRight' && currentIndex < fields.length - 1) {
+      e.preventDefault();
+      const nextField = fields[currentIndex + 1];
+      setActiveField({ row, field: nextField });
+      setTimeout(() => inputRefs.current.get(`${row}-${nextField}`)?.focus(), 0);
+    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      e.preventDefault();
+      const prevField = fields[currentIndex - 1];
+      setActiveField({ row, field: prevField });
+      setTimeout(() => inputRefs.current.get(`${row}-${prevField}`)?.focus(), 0);
+    } else if (e.key === 'ArrowDown' && row < items.length - 1) {
+      e.preventDefault();
+      setActiveField({ row: row + 1, field });
+      setTimeout(() => inputRefs.current.get(`${row + 1}-${field}`)?.focus(), 0);
+    } else if (e.key === 'ArrowUp' && row > 0) {
+      e.preventDefault();
+      setActiveField({ row: row - 1, field });
+      setTimeout(() => inputRefs.current.get(`${row - 1}-${field}`)?.focus(), 0);
     }
   };
 
