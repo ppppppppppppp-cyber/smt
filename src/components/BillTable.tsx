@@ -113,7 +113,7 @@ const BillTable = ({
       amount: 0,
     };
     setItems(prev => [...prev, newItem]);
-    setTimeout(() => setActiveField({ row: items.length, field: 'rate' }), 50);
+    setTimeout(() => setActiveField({ row: items.length, field: 'pid' }), 50);
   };
 
   const deleteRow = (index: number) => {
