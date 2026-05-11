@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Printer, Share2, ShoppingBag, LogIn } from 'lucide-react';
+import { Save, Printer, Share2, ShoppingBag, LogIn, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,52 @@ const Index = () => {
   const [keypadEnabled, setKeypadEnabled] = useState(true);
   const [isLandscape, setIsLandscape] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const handleClearBill = () => {
+  if (window.confirm('Clear all bill items? This cannot be undone.')) {
+    setItems([createEmptyItem()]);
+    setCustomerName('');
+    setPackingCharge('');
+    setoldbalance('');
+    setAdvPay('');
+    setPackingEnabled(false);
+    setoldEnabled(false);
+    setAdvPayEnabled(false);
+    setActiveField({ row: 0, field: 'rate' });
+    localStorage.removeItem('rsg_bill_draft');
+  }
+  };
+
+  // Load draft on mount
+useEffect(() => {
+  try {
+    const raw = localStorage.getItem('rsg_bill_draft');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.items?.length)         setItems(d.items);
+    if (d.customerName != null)  setCustomerName(d.customerName);
+    if (d.showShopName != null)  setShowShopName(d.showShopName);
+    if (d.packingEnabled != null) setPackingEnabled(d.packingEnabled);
+    if (d.packingCharge != null) setPackingCharge(d.packingCharge);
+    if (d.oldEnabled != null)    setoldEnabled(d.oldEnabled);
+    if (d.oldbalance != null)    setoldbalance(d.oldbalance);
+    if (d.advPayEnabled != null) setAdvPayEnabled(d.advPayEnabled);
+    if (d.advPay != null)        setAdvPay(d.advPay);
+  } catch {}
+}, []);
+
+// Save draft on every change
+  useEffect(() => {
+    const draft = {
+      items, customerName, showShopName,
+      packingEnabled, packingCharge,
+      oldEnabled, oldbalance,
+      advPayEnabled, advPay,
+    };
+    localStorage.setItem('rsg_bill_draft', JSON.stringify(draft));
+  }, [items, customerName, showShopName,
+      packingEnabled, packingCharge,
+      oldEnabled, oldbalance,
+      advPayEnabled, advPay]);
 
   useEffect(() => {
     const check = () => {
@@ -156,6 +202,7 @@ const Index = () => {
       }
 
       toast({ title: 'Bill saved successfully! ✨' });
+      localStorage.removeItem('rsg_bill_draft');
       setItems([createEmptyItem()]);
       setCustomerName('');
       setPackingCharge('');
@@ -392,6 +439,13 @@ const Index = () => {
             className="flex-1 min-w-[80px] flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold text-sm"
           >
             <Share2 size={16} /> Share
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={handleClearBill}
+            className="flex-1 min-w-[80px] flex items-center justify-center gap-2 py-3 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm"
+          >
+            <Trash2 size={16} /> Clear
           </motion.button>
         </div>
 
