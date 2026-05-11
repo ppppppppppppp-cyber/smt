@@ -111,15 +111,21 @@ useEffect(() => {
     const item = items[activeField.row];
     if (!item) return;
     const field = activeField.field;
-    if (field === 'particulars') return; // Skip particulars for keypad
-    const currentValue = field === 'pid' ? item.pid : field === 'rate' ? item.rate : item.qty;
+    const currentValue = field === 'pid'
+      ? item.pid
+      : field === 'rate'
+      ? item.rate
+      : field === 'qty'
+      ? item.qty
+      : item.particulars;
     const newValue = currentValue + key;
     setItems(prev => {
       const updated = [...prev];
       const upItem = { ...updated[activeField.row] };
       if (field === 'pid') upItem.pid = newValue;
       else if (field === 'rate') upItem.rate = newValue;
-      else upItem.qty = newValue;
+      else if (field === 'qty') upItem.qty = newValue;
+      else upItem.particulars = newValue;
       upItem.amount = (parseFloat(upItem.rate) || 0) * (parseFloat(upItem.qty) || 0);
       updated[activeField.row] = upItem;
       return updated;
@@ -131,15 +137,21 @@ useEffect(() => {
     const item = items[activeField.row];
     if (!item) return;
     const field = activeField.field;
-    if (field === 'particulars') return; // Skip particulars for keypad
-    const currentValue = field === 'pid' ? item.pid : field === 'rate' ? item.rate : item.qty;
+    const currentValue = field === 'pid'
+      ? item.pid
+      : field === 'rate'
+      ? item.rate
+      : field === 'qty'
+      ? item.qty
+      : item.particulars;
     const newValue = currentValue.slice(0, -1);
     setItems(prev => {
       const updated = [...prev];
       const upItem = { ...updated[activeField.row] };
       if (field === 'pid') upItem.pid = newValue;
       else if (field === 'rate') upItem.rate = newValue;
-      else upItem.qty = newValue;
+      else if (field === 'qty') upItem.qty = newValue;
+      else upItem.particulars = newValue;
       upItem.amount = (parseFloat(upItem.rate) || 0) * (parseFloat(upItem.qty) || 0);
       updated[activeField.row] = upItem;
       return updated;
@@ -456,7 +468,7 @@ useEffect(() => {
         </div>
 
         {/* Mobile Keypad */}
-        {keypadEnabled && isMobile && !isLandscape && (
+        {keypadEnabled && isMobile && !isLandscape && activeField?.field !== 'particulars' && (
           <motion.div
             initial={{ y: 100 }}
             animate={{ y: 0 }}

@@ -307,7 +307,7 @@ const ViewBillsTab = () => {
           </div>
         </div>
 
-        {keypadEnabled && isMobile && !isLandscape && (
+        {keypadEnabled && isMobile && !isLandscape && activeField?.field !== 'particulars' && (
           <motion.div
             initial={{ y: 100 }}
             animate={{ y: 0 }}
