@@ -34,7 +34,7 @@ const ViewBillsTab = () => {
   const [packingCharge, setPackingCharge] = useState('');
   const [oldbalance, setoldbalance] = useState('');
   const [advPay, setAdvPay] = useState('');
-  const [activeField, setActiveField] = useState<{ row: number; field: 'rate' | 'qty' | 'pid' } | null>(null);
+  const [activeField, setActiveField] = useState<{ row: number; field: 'pid' | 'particulars' | 'rate' | 'qty' } | null>(null);
   // keypad toggle and mobile/orientation helpers
   const [keypadEnabled, setKeypadEnabled] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);

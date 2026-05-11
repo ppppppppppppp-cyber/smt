@@ -15,8 +15,8 @@ export interface BillItem {
 interface BillTableProps {
   items: BillItem[];
   setItems: React.Dispatch<React.SetStateAction<BillItem[]>>;
-  activeField: { row: number; field: 'rate' | 'qty' | 'pid' } | null;
-  setActiveField: (f: { row: number; field: 'rate' | 'qty' | 'pid' } | null) => void;
+  activeField: { row: number; field: 'pid' | 'particulars' | 'rate' | 'qty' } | null;
+  setActiveField: (f: { row: number; field: 'pid' | 'particulars' | 'rate' | 'qty' } | null) => void;
   showChecklist?: boolean;
   checkedItems?: Record<string, boolean>;
   onCheckToggle?: (id: string) => void;
@@ -121,12 +121,23 @@ const BillTable = ({
     setItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, row: number, field: 'rate' | 'qty' | 'pid') => {
+  const handleKeyDown = (e: React.KeyboardEvent, row: number, field: 'pid' | 'particulars' | 'rate' | 'qty') => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (field === 'rate') {
+      if (field === 'pid') {
         (document.activeElement as HTMLElement)?.blur();
-        // Prevent keyboard and delay focusing the qty field
+        setTimeout(() => {
+          setActiveField({ row, field: 'particulars' });
+          setTimeout(() => inputRefs.current.get(`${row}-particulars`)?.focus(), 0);
+        }, 150);
+      } else if (field === 'particulars') {
+        (document.activeElement as HTMLElement)?.blur();
+        setTimeout(() => {
+          setActiveField({ row, field: 'rate' });
+          setTimeout(() => inputRefs.current.get(`${row}-rate`)?.focus(), 0);
+        }, 150);
+      } else if (field === 'rate') {
+        (document.activeElement as HTMLElement)?.blur();
         setTimeout(() => {
           setActiveField({ row, field: 'qty' });
           setTimeout(() => inputRefs.current.get(`${row}-qty`)?.focus(), 0);
@@ -138,8 +149,8 @@ const BillTable = ({
           addRow();
         } else {
           setTimeout(() => {
-            setActiveField({ row: row + 1, field: 'rate' });
-            setTimeout(() => inputRefs.current.get(`${row + 1}-rate`)?.focus(), 0);
+            setActiveField({ row: row + 1, field: 'pid' });
+            setTimeout(() => inputRefs.current.get(`${row + 1}-pid`)?.focus(), 0);
           }, 150);
         }
       }
@@ -197,14 +208,19 @@ const BillTable = ({
                     onBlur={e => handlePidBlur(i, e.target.value)}
                     onFocus={() => setActiveField({ row: i, field: 'pid' })}
                     onClick={() => setActiveField({ row: i, field: 'pid' })}
+                    onKeyDown={e => handleKeyDown(e, i, 'pid')}
                     className="w-full text-center"
                     inputMode="numeric"
                   />
                 </td>
                 <td>
                   <input
+                    ref={setRef(`${i}-particulars`)}
                     value={item.particulars}
                     onChange={e => updateItem(i, 'particulars', e.target.value)}
+                    onFocus={() => setActiveField({ row: i, field: 'particulars' })}
+                    onClick={() => setActiveField({ row: i, field: 'particulars' })}
+                    onKeyDown={e => handleKeyDown(e, i, 'particulars')}
                     className="w-full"
                   />
                 </td>

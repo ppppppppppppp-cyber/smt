@@ -33,7 +33,7 @@ const Index = () => {
   const [oldbalance, setoldbalance] = useState('');
   const [advPayEnabled, setAdvPayEnabled] = useState(false);
   const [advPay, setAdvPay] = useState('');
-  const [activeField, setActiveField] = useState<{ row: number; field: 'rate' | 'qty' | 'pid' } | null>({ row: 0, field: 'rate' });
+  const [activeField, setActiveField] = useState<{ row: number; field: 'pid' | 'particulars' | 'rate' | 'qty' } | null>({ row: 0, field: 'pid' });
   const [saving, setSaving] = useState(false);
   const [keypadEnabled, setKeypadEnabled] = useState(true);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -48,7 +48,7 @@ const Index = () => {
     setPackingEnabled(false);
     setoldEnabled(false);
     setAdvPayEnabled(false);
-    setActiveField({ row: 0, field: 'rate' });
+    setActiveField({ row: 0, field: 'pid' });
     localStorage.removeItem('rsg_bill_draft');
   }
   };
@@ -111,6 +111,7 @@ useEffect(() => {
     const item = items[activeField.row];
     if (!item) return;
     const field = activeField.field;
+    if (field === 'particulars') return; // Skip particulars for keypad
     const currentValue = field === 'pid' ? item.pid : field === 'rate' ? item.rate : item.qty;
     const newValue = currentValue + key;
     setItems(prev => {
@@ -130,6 +131,7 @@ useEffect(() => {
     const item = items[activeField.row];
     if (!item) return;
     const field = activeField.field;
+    if (field === 'particulars') return; // Skip particulars for keypad
     const currentValue = field === 'pid' ? item.pid : field === 'rate' ? item.rate : item.qty;
     const newValue = currentValue.slice(0, -1);
     setItems(prev => {
@@ -146,15 +148,19 @@ useEffect(() => {
 
   const handleKeypadEnter = () => {
     if (!activeField) return;
-    if (activeField.field === 'rate') {
+    if (activeField.field === 'pid') {
+      setActiveField({ row: activeField.row, field: 'particulars' });
+    } else if (activeField.field === 'particulars') {
+      setActiveField({ row: activeField.row, field: 'rate' });
+    } else if (activeField.field === 'rate') {
       setActiveField({ row: activeField.row, field: 'qty' });
     } else if (activeField.field === 'qty') {
       if (activeField.row === items.length - 1) {
         const newItem = createEmptyItem();
         setItems(prev => [...prev, newItem]);
-        setTimeout(() => setActiveField({ row: items.length, field: 'rate' }), 50);
+        setTimeout(() => setActiveField({ row: items.length, field: 'pid' }), 50);
       } else {
-        setActiveField({ row: activeField.row + 1, field: 'rate' });
+        setActiveField({ row: activeField.row + 1, field: 'pid' });
       }
     }
   };
@@ -208,7 +214,7 @@ useEffect(() => {
       setPackingCharge('');
       setoldbalance('');
       setAdvPay('');
-      setActiveField({ row: 0, field: 'rate' });
+      setActiveField({ row: 0, field: 'pid' });
     } catch (err: any) {
       toast({ title: 'Error saving bill', description: err.message, variant: 'destructive' });
     } finally {
