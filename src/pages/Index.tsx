@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 const createEmptyItem = (): BillItem => ({
   id: crypto.randomUUID(),
   pid: '0',
-  particulars: 'ITEM',
+  particulars: '',
   rate: '',
   qty: '',
   amount: 0,
@@ -126,7 +126,7 @@ useEffect(() => {
       if (field === 'pid') upItem.pid = newValue;
       else if (field === 'rate') upItem.rate = newValue;
       else if (field === 'qty') upItem.qty = newValue;
-      else upItem.particulars = newValue;
+      else upItem.particulars = newValue.toUpperCase();
       upItem.amount = (parseFloat(upItem.rate) || 0) * (parseFloat(upItem.qty) || 0);
       updated[activeField.row] = upItem;
       return updated;
@@ -152,7 +152,7 @@ useEffect(() => {
       if (field === 'pid') upItem.pid = newValue;
       else if (field === 'rate') upItem.rate = newValue;
       else if (field === 'qty') upItem.qty = newValue;
-      else upItem.particulars = newValue;
+      else upItem.particulars = newValue.toUpperCase();
       upItem.amount = (parseFloat(upItem.rate) || 0) * (parseFloat(upItem.qty) || 0);
       updated[activeField.row] = upItem;
       return updated;
