@@ -70,7 +70,7 @@ const BillTable = ({
       if (field === 'pid') {
         item.pid = value;
       } else if (field === 'particulars') {
-        item.particulars = value;
+        item.particulars = value.toUpperCase();
       } else if (field === 'rate') {
         item.rate = value;
       } else if (field === 'qty') {
@@ -92,9 +92,9 @@ const BillTable = ({
       const item = { ...updated[index], pid: formatted };
 
       if (formatted === '0' || formatted.toUpperCase() === '0') {
-        item.particulars = 'ITEM';
+        item.particulars = '';
       } else if (data?.name) {
-        item.particulars = data.name;
+        item.particulars = data.name.toUpperCase();
       }
 
       item.amount = (parseFloat(item.rate) || 0) * (parseFloat(item.qty) || 0);
@@ -107,7 +107,7 @@ const BillTable = ({
     const newItem: BillItem = {
       id: crypto.randomUUID(),
       pid: '0',
-      particulars: 'ITEM',
+      particulars: '',
       rate: '',
       qty: '',
       amount: 0,
