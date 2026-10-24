@@ -26,7 +26,7 @@ const Index = () => {
   const { user, isAdmin } = useAuth();
   const [items, setItems] = useState<BillItem[]>([createEmptyItem()]);
   const [customerName, setCustomerName] = useState('');
-  const [showShopName, setShowShopName] = useState(false);
+  const [showShopName, setShowShopName] = useState(true);
   const [packingEnabled, setPackingEnabled] = useState(false);
   const [packingCharge, setPackingCharge] = useState('');
   const [oldEnabled, setoldEnabled] = useState(false);

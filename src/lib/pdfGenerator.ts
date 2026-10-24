@@ -88,8 +88,8 @@ export const generateBillPDF = (data: BillData): jsPDF => {
   const scale = availableWidth / sumBase;
   const colWidths = {
     0: Math.max(6, Math.floor(baseWidths[0] * scale)),
-    1: Math.max(8, Math.floor(baseWidths[1] * scale)),
-    2: Math.max(10, Math.floor(baseWidths[2] * scale)),
+    1: Math.max(8, Math.floor(baseWidths[2] * scale)),
+    2: Math.max(10, Math.floor(baseWidths[1] * scale)),
     3: Math.max(6, Math.floor(baseWidths[3] * scale)),
     4: Math.max(8, Math.floor(baseWidths[4] * scale)),
   };
@@ -194,8 +194,8 @@ export const generateBillPDF = (data: BillData): jsPDF => {
 
       columnStyles: {
         0: { cellWidth: colWidths[0], halign: 'center' },
-        1: { cellWidth: colWidths[1] },
-        2: { cellWidth: colWidths[2], halign: 'center' },
+        1: { cellWidth: colWidths[1], halign: 'center' },
+        2: { cellWidth: colWidths[2] },
         3: { cellWidth: colWidths[3], halign: 'center' },
         4: { cellWidth: colWidths[4], halign: 'center' },
       },
