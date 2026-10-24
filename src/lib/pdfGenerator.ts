@@ -40,7 +40,7 @@ export const generateBillPDF = (data: BillData): jsPDF => {
   const centerX = 74; // center of 148mm page
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("Sri Meenakshi Traders", centerX, y, { align: "center" });
+  doc.text("JAI SHREE MAHAKAL", centerX, y, { align: "center" });
   y += 5;
 }
 
@@ -51,8 +51,8 @@ export const generateBillPDF = (data: BillData): jsPDF => {
 
   const itemsForPdf = data.items.map((item, i) => ({
     no: i + 1,
-    particulars: item.particulars,
     rate: item.rate,
+    particulars: item.particulars,
     qty: item.qty,
     amount: item.amount,
     isSpecial: false,
