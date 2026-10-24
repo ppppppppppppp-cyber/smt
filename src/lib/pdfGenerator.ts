@@ -108,7 +108,7 @@ export const generateBillPDF = (data: BillData): jsPDF => {
     // Always pad to exactly ROWS_PER_PAGE rows
     const padded = [...pageItems];
     while (padded.length < ROWS_PER_PAGE) {
-      padded.push({ no: 0, particulars: '', rate: '', qty: '', amount: 0, isSpecial: false });
+      padded.push({ no: 0,rate: '', particulars: '', qty: '', amount: 0, isSpecial: false });
     }
 
     const pageSubtotal = pageItems.reduce((s, it) => s + (it.amount || 0), 0);
@@ -120,8 +120,8 @@ export const generateBillPDF = (data: BillData): jsPDF => {
       if (it.isSpecial) {
         return [
           { content: '', styles: { halign: 'center' } },
-          { content: it.particulars, styles: { halign: 'center' } },
           { content: it.rate, styles: { halign: 'center' } },
+          {content: it.particulars, styles: { halign: 'center' } },
           { content: it.qty, styles: { halign: 'center' } },
           { content: amountDisplay, styles: { halign: 'center' } },
         ];
@@ -167,7 +167,7 @@ export const generateBillPDF = (data: BillData): jsPDF => {
           { content: `Party : ${data.customerName || '-'}`, colSpan: 3, styles: { halign: 'left' } },
           { content: `Date : ${formatDate(data.billDate)}`, colSpan: 2, styles: { halign: 'right' } },
         ],
-        ['No', 'Particulars', 'Rate', 'Qty', 'Amount'],
+        ['No', 'Rate', 'Particulars', 'Qty', 'Amount'],
       ],
 
       body: pageBody,
