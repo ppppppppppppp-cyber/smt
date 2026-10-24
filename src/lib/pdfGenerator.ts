@@ -127,7 +127,7 @@ export const generateBillPDF = (data: BillData): jsPDF => {
         ];
       }
 
-      return [noDisplay, it.particulars, it.rate, it.qty, amountDisplay];
+      return [noDisplay, it.rate, it.particulars, it.qty, amountDisplay];
     });
 
     // Subtotal row
